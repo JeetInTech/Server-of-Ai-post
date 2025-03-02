@@ -119,8 +119,8 @@ def generate_post():
         gemini_response.raise_for_status()
         post_text = gemini_response.json()['candidates'][0]['content']['parts'][0]['text'].strip()
         print(f"Gemini generated post: '{post_text}'")
-        print(f"Length: {len(post_text)}, Emojis: {re.search(r'[\U0001F600-\U0001F64F]', post_text) is not None}, Hashtags: {post_text.count('#')}")
-
+        emoji_pattern = r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF]'  # Combined valid emoji ranges
+        print(f"Length: {len(post_text)}, Emojis: {re.search(emoji_pattern, post_text) is not None}, Hashtags: {post_text.count('#')}")
         return handle_post_validation(post_text)
 
     except Exception as e:
@@ -197,8 +197,8 @@ def generate_with_huggingface(prompt):
         if '[/INST]' in post_text:
             post_text = post_text.split('[/INST]')[-1].strip()
         print(f"Hugging Face generated post: '{post_text}'")
-        print(f"Length: {len(post_text)}, Emojis: {re.search(r'[\U0001F600-\U0001F64F]', post_text) is not None}, Hashtags: {post_text.count('#')}")
-
+        emoji_pattern = r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF]'  # Same fix here
+        print(f"Length: {len(post_text)}, Emojis: {re.search(emoji_pattern, post_text) is not None}, Hashtags: {post_text.count('#')}")
         return handle_post_validation(post_text)
 
     except Exception as e:
@@ -217,14 +217,9 @@ def is_valid_post(text):
         return False
     # Check for at least one emoji using Unicode emoji detection
     emoji_pattern = re.compile(
-        "[" 
-        "\U0001F600-\U0001F64F"  # emoticons
-        "\U0001F300-\U0001F5FF"  # symbols & pictographs
-        "\U0001F680-\U0001F6FF"  # transport & map symbols
-        "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-        "]+", 
+        r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]+', 
         flags=re.UNICODE
-    )
+        )
     if not emoji_pattern.search(text):
         return False
     # # Check for at least two hashtags to match the prompt's requirement
