@@ -48,7 +48,9 @@ def retry_request(url, data, headers, retries=5, initial_delay=1, response_type=
                 delay *= 2
                 continue
             raise e
-
+@app.route('/')
+def home():
+    return "LinkedIn Post Generator API is running. Use /generate-post or /generate-image."
 # LinkedIn Authentication Routes
 @app.route('/auth/linkedin')
 def auth_linkedin():
@@ -396,4 +398,5 @@ def post_to_linkedin():
         return jsonify({'error': 'Failed to post to LinkedIn', 'details': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=True) 
+    port = int(os.environ.get('PORT', 5001))  # Use Render's PORT variable
+    app.run(host='0.0.0.0', port=port, debug=False)  # Turn off debug mode in production
